@@ -1,0 +1,90 @@
+#include <LiquidCrystal.h>
+#include <EEPROM.h>
+
+// LCD pins: RS, E, D4, D5, D6, D7
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+
+// Candidate button pins
+const int candidate1Btn = 6;
+const int candidate2Btn = 7;
+const int candidate3Btn = 8;
+
+// Reset button
+const int resetBtn = 9;
+
+// Variables to store votes
+int candidate1Votes = 0;
+int candidate2Votes = 0;
+int candidate3Votes = 0;
+
+void setup() {
+  // Initialize LCD
+  lcd.begin(16, 2);
+  lcd.print("Electronic Voting");
+
+  // Set button pins as input with pull-up resistors
+  pinMode(candidate1Btn, INPUT_PULLUP);
+  pinMode(candidate2Btn, INPUT_PULLUP);
+  pinMode(candidate3Btn, INPUT_PULLUP);
+  pinMode(resetBtn, INPUT_PULLUP);
+
+  // Load votes from EEPROM
+  candidate1Votes = EEPROM.read(0);
+  candidate2Votes = EEPROM.read(1);
+  candidate3Votes = EEPROM.read(2);
+
+  delay(2000);
+  displayVotes();
+}
+
+void loop() {
+  // Candidate 1 vote
+  if (digitalRead(candidate1Btn) == LOW) {
+    candidate1Votes++;
+    EEPROM.write(0, candidate1Votes);
+    displayVotes();
+    delay(300); // debounce
+  }
+
+  // Candidate 2 vote
+  if (digitalRead(candidate2Btn) == LOW) {
+    candidate2Votes++;
+    EEPROM.write(1, candidate2Votes);
+    displayVotes();
+    delay(300); // debounce
+  }
+
+  // Candidate 3 vote
+  if (digitalRead(candidate3Btn) == LOW) {
+    candidate3Votes++;
+    EEPROM.write(2, candidate3Votes);
+    displayVotes();
+    delay(300); // debounce
+  }
+
+  // Reset votes
+  if (digitalRead(resetBtn) == LOW) {
+    candidate1Votes = 0;
+    candidate2Votes = 0;
+    candidate3Votes = 0;
+    EEPROM.write(0, candidate1Votes);
+    EEPROM.write(1, candidate2Votes);
+    EEPROM.write(2, candidate3Votes);
+    displayVotes();
+    delay(500);
+  }
+}
+
+void displayVotes() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("C1:");
+  lcd.print(candidate1Votes);
+  lcd.print(" C2:");
+  lcd.print(candidate2Votes);
+  
+  lcd.setCursor(0, 1);
+  lcd.print("C3:");
+  lcd.print(candidate3Votes);
+  lcd.print(" Reset:R");
+}
